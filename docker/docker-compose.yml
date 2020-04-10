@@ -1,0 +1,17 @@
+version: '3.3'
+services:
+  mongo:
+    image: mongo:latest
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_INITDB_DATABASE=links
+      - MONGO_INITDB_ROOT_USERNAME=mongouserrw
+      - MONGO_INITDB_ROOT_PASSWORD=secret
+    volumes:
+      - mongodb:/data/db
+      - mongocfg:/data/configdb
+    ports:
+      - 27020:27017
+volumes:
+  mongodb:
+  mongocfg:

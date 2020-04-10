@@ -1,0 +1,13 @@
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27020
+      username: mongouserrw
+      password: secret
+      database: links
+      authentication-database: admin
+      #uri: mongodb://mongouserrw:secret@localhost:27020/links?authSource=admin
+logging:
+  level:
+    root: INFO
