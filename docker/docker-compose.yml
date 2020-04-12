@@ -12,6 +12,10 @@ services:
       - mongocfg:/data/configdb
     ports:
       - 27020:27017
+  mongo2:
+    image: mongo:latest
+    ports:
+      - 27017:27017
 volumes:
   mongodb:
   mongocfg:

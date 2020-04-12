@@ -1,0 +1,15 @@
+language: java
+
+jdk:
+  - oraclejdk11
+
+branches:
+  only:
+    - master
+    - develop
+  except:
+    - feature/*
+
+services:
+  - mongodb
+
