@@ -1,19 +1,17 @@
 package ru.testfield.links.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.server.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.testfield.links.model.Link;
 import ru.testfield.links.repository.LinkRepository;
 
-import java.net.URI;
-
 @RestController
-@RequestMapping(value="/lnx")
 @RequiredArgsConstructor
+@RequestMapping(value="/lnx")
 public class LinkController {
 
     private final LinkRepository linkRepository;
@@ -23,4 +21,15 @@ public class LinkController {
         Mono<Long> linksNumberMono = linkRepository.count();
         return linksNumberMono;
     }
+
+    @RequestMapping("/list")
+    public Flux<Link> listAll(){
+        return linkRepository.findAll();
+    }
+
+    @RequestMapping(value = "/",method = RequestMethod.DELETE)
+    public void deleteById(){
+
+    }
+
 }
