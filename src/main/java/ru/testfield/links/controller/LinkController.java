@@ -17,8 +17,7 @@ public class LinkController {
 
     @RequestMapping("/count")
     public Mono<Long> count(){
-        Mono<Long> linksNumberMono = linkRepository.count();
-        return linksNumberMono;
+        return linkRepository.count();
     }
 
     @RequestMapping(value = {"","/"}, method = RequestMethod.GET)
@@ -43,7 +42,7 @@ public class LinkController {
 
     @RequestMapping(value = "/{linkId}", method = RequestMethod.DELETE)
     public void deleteById(@PathVariable ObjectId linkId){
-        linkRepository.deleteById(linkId);
+        linkRepository.deleteById(linkId).subscribe();
     }
 
     @RequestMapping(value = "/{linkId}", method = RequestMethod.PUT)

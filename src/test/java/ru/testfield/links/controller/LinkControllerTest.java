@@ -2,10 +2,6 @@ package ru.testfield.links.controller;
 
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -14,41 +10,21 @@ import ru.testfield.links.model.Link;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class LinkControllerTest {
-
-    @LocalServerPort
-    private int port;
-
-    private String url;
-
-    private final int linksToCreateNumber = 1000;
-
-    @Autowired
-    private TestRestTemplate restTemplate;
-
-    @BeforeAll
-    public void init(){
-        url = "http://localhost:" + port+"/lnx";
-    }
+public class LinkControllerTest extends AbstractControllerTest {
 
     @Test
     @Order(1)
     public void deleteAllTest() {
-        ResponseEntity<Void> result = restTemplate.exchange(url,
+        ResponseEntity<Void> result = restTemplate.exchange(url + "/lnx",
                 HttpMethod.DELETE,
                 HttpEntity.EMPTY,
                 Void.class);
 
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertEquals(HttpStatus.OK,result.getStatusCode());
     }
 
     @Test
@@ -63,8 +39,7 @@ public class LinkControllerTest {
             );
         }
         for(Link link: links) {
-            HttpEntity<Link> request = new HttpEntity<>(link);
-            Link createdLink = restTemplate.postForObject(url, request, Link.class);
+            Link createdLink = restTemplate.postForObject(url+"/lnx", new HttpEntity<>(link), Link.class);
             assertEquals(link, createdLink);
         }
     }
@@ -72,14 +47,14 @@ public class LinkControllerTest {
     @Test
     @Order(3)
     public void countTest() {
-        ResponseEntity<Integer> countResponse = restTemplate.getForEntity(url + "/count", Integer.class);
+        ResponseEntity<Integer> countResponse = restTemplate.getForEntity(url+"/lnx/count", Integer.class);
         assertEquals(Integer.valueOf(linksToCreateNumber), countResponse.getBody());
     }
 
     @Test
     @Order(4)
     public void listAllTest() {
-        ResponseEntity<Link[]> listAllResponse = restTemplate.getForEntity(url, Link[].class);
+        ResponseEntity<Link[]> listAllResponse = restTemplate.getForEntity(url+"/lnx", Link[].class);
         Link[] links = listAllResponse.getBody();
         if(links==null){
             throw new RuntimeException("Unable to retrieve links from storage!");
@@ -93,45 +68,40 @@ public class LinkControllerTest {
     public void getByIdTest() {
         Link linkToProcess = getRandomLinkToProcess();
         ResponseEntity<Link> getByIdResponse =
-                restTemplate.getForEntity(url+"/"+linkToProcess.get_id(), Link.class);
+                restTemplate.getForEntity(url+"/lnx/"+linkToProcess.get_id(), Link.class);
 
         Link foundById = getByIdResponse.getBody();
         assertEquals(linkToProcess,foundById);
     }
 
     @Test
-    @Order(5)
+    @Order(6)
     public void deleteByIdTest() {
         Link linkToProcess = getRandomLinkToProcess();
-        ResponseEntity<Void> result = restTemplate.exchange(url+"/"+linkToProcess.get_id(),
+        ResponseEntity<Void> result = restTemplate.exchange(url+"/lnx/"+linkToProcess.get_id(),
                 HttpMethod.DELETE,
                 HttpEntity.EMPTY,
                 Void.class);
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertEquals(HttpStatus.OK,result.getStatusCode());
+
+        ResponseEntity<Integer> countResponse = restTemplate.getForEntity(url+"/lnx/count", Integer.class);
+        assertEquals(Integer.valueOf(linksToCreateNumber-1), countResponse.getBody());
     }
 
     @Test
-    @Order(6)
+    @Order(7)
     public void updateById(){
         final String testString = "TESTINGSTRING: "+ UUID.randomUUID();
         Link linkToProcess = getRandomLinkToProcess();
         linkToProcess.setDescription(testString);
-        ResponseEntity<Link> result = restTemplate.exchange(url+"/"+linkToProcess.get_id(),
+        ResponseEntity<Link> result = restTemplate.exchange(url+"/lnx/"+linkToProcess.get_id(),
                 HttpMethod.PUT,
                 new HttpEntity<>(linkToProcess),
                 Link.class);
-        assertEquals(testString, result.getBody().getDescription());
-    }
-
-    private Link getRandomLinkToProcess() {
-        ResponseEntity<Link[]> listAllResponse = restTemplate.getForEntity(url, Link[].class);
-        Link[] links = listAllResponse.getBody();
-        if(links==null){
-            throw new RuntimeException("Unable to retrieve links from storage!");
-        }else {
-            Random random = new Random();
-            int randomIndex = random.nextInt(links.length);
-            return links[randomIndex];
+        if(result.getBody()!=null) {
+            assertEquals(testString, result.getBody().getDescription());
+        }else{
+            throw new RuntimeException("Unable to recieve response body!");
         }
     }
 
